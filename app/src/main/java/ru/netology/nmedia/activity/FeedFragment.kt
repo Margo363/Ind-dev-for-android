@@ -35,10 +35,8 @@ class FeedFragment : Fragment() {
             override fun onLike(post: Post) {
                 if (!post.likedByMe) {
                     viewModel.likeById(post.id)
-                    viewModel.loadPosts()
                 }else{
                     viewModel.disLikeById(post.id)
-                    viewModel.loadPosts()
                 }
             }
 
@@ -64,7 +62,7 @@ class FeedFragment : Fragment() {
             binding.progress.isVisible = state.loading
             binding.errorGroup.isVisible = state.error
             binding.emptyText.isVisible = state.empty
-            binding.refresh.isRefreshing = state.refreshing
+            binding.swipeRefresh.isRefreshing = state.refreshing
         })
 
         binding.retryButton.setOnClickListener {
@@ -75,12 +73,9 @@ class FeedFragment : Fragment() {
             findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
         }
 
-        binding.refresh.setColorSchemeResources(
-            android.R.color.holo_blue_bright
-        )
-
-        binding.refresh.setOnRefreshListener {
+        binding.swipeRefresh.setOnRefreshListener {
             viewModel.loadPosts()
+            binding.swipeRefresh.isRefreshing = false
         }
 
         return binding.root
