@@ -35,7 +35,9 @@ class FeedFragment : Fragment() {
             override fun onLike(post: Post) {
                 if (!post.likedByMe) {
                     viewModel.likeById(post.id)
-                }else viewModel.disLikeById(post.id)
+                }else{
+                    viewModel.disLikeById(post.id)
+                }
             }
 
             override fun onRemove(post: Post) {
@@ -60,6 +62,7 @@ class FeedFragment : Fragment() {
             binding.progress.isVisible = state.loading
             binding.errorGroup.isVisible = state.error
             binding.emptyText.isVisible = state.empty
+            binding.swipeRefresh.isRefreshing = state.refreshing
         })
 
         binding.retryButton.setOnClickListener {
@@ -68,6 +71,11 @@ class FeedFragment : Fragment() {
 
         binding.fab.setOnClickListener {
             findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
+        }
+
+        binding.swipeRefresh.setOnRefreshListener {
+            viewModel.loadPosts()
+            binding.swipeRefresh.isRefreshing = false
         }
 
         return binding.root
