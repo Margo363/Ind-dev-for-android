@@ -30,13 +30,15 @@ class FeedFragment : Fragment() {
         val adapter = PostsAdapter(object : OnInteractionListener {
             override fun onEdit(post: Post) {
                 viewModel.edit(post)
+                val bundle = Bundle().apply { putString("content", post.content) }
+                findNavController().navigate(R.id.action_feedFragment_to_newPostFragment, bundle)
             }
 
             override fun onLike(post: Post) {
                 if (!post.likedByMe) {
                     viewModel.likeById(post.id)
                 }else{
-                    viewModel.disLikeById(post.id)
+                    viewModel.unlikeById(post.id)
                 }
             }
 
@@ -45,6 +47,7 @@ class FeedFragment : Fragment() {
             }
 
             override fun onShare(post: Post) {
+                viewModel.shareById(post.id)
                 val intent = Intent().apply {
                     action = Intent.ACTION_SEND
                     putExtra(Intent.EXTRA_TEXT, post.content)
@@ -55,8 +58,13 @@ class FeedFragment : Fragment() {
                     Intent.createChooser(intent, getString(R.string.chooser_share_post))
                 startActivity(shareIntent)
             }
+
+            override fun onViews(post: Post) {
+                viewModel.viewsById(post.id)
+            }
         })
         binding.list.adapter = adapter
+        binding.list.animation = null
         viewModel.data.observe(viewLifecycleOwner, { state ->
             adapter.submitList(state.posts)
             binding.progress.isVisible = state.loading
