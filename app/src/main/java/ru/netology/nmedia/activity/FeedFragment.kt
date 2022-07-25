@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -30,15 +31,13 @@ class FeedFragment : Fragment() {
         val adapter = PostsAdapter(object : OnInteractionListener {
             override fun onEdit(post: Post) {
                 viewModel.edit(post)
-                val bundle = Bundle().apply { putString("content", post.content) }
-                findNavController().navigate(R.id.action_feedFragment_to_newPostFragment, bundle)
             }
 
             override fun onLike(post: Post) {
-                if (!post.likedByMe) {
+                if (post.likedByMe) {
+                    viewModel.unLikeById(post.id)
+                } else {
                     viewModel.likeById(post.id)
-                }else{
-                    viewModel.unlikeById(post.id)
                 }
             }
 
@@ -47,7 +46,6 @@ class FeedFragment : Fragment() {
             }
 
             override fun onShare(post: Post) {
-                viewModel.shareById(post.id)
                 val intent = Intent().apply {
                     action = Intent.ACTION_SEND
                     putExtra(Intent.EXTRA_TEXT, post.content)
@@ -58,20 +56,17 @@ class FeedFragment : Fragment() {
                     Intent.createChooser(intent, getString(R.string.chooser_share_post))
                 startActivity(shareIntent)
             }
-
-            override fun onViews(post: Post) {
-                viewModel.viewsById(post.id)
-            }
         })
         binding.list.adapter = adapter
-        binding.list.animation = null
-        viewModel.data.observe(viewLifecycleOwner, { state ->
+        viewModel.data.observe(viewLifecycleOwner) { state ->
             adapter.submitList(state.posts)
             binding.progress.isVisible = state.loading
             binding.errorGroup.isVisible = state.error
             binding.emptyText.isVisible = state.empty
-            binding.swipeRefresh.isRefreshing = state.refreshing
-        })
+            if (state.error) {
+                Toast.makeText(activity, R.string.error_description, Toast.LENGTH_SHORT).show()
+            }
+        }
 
         binding.retryButton.setOnClickListener {
             viewModel.loadPosts()
@@ -80,12 +75,6 @@ class FeedFragment : Fragment() {
         binding.fab.setOnClickListener {
             findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
         }
-
-        binding.swipeRefresh.setOnRefreshListener {
-            viewModel.loadPosts()
-            binding.swipeRefresh.isRefreshing = false
-        }
-
         return binding.root
     }
 }
