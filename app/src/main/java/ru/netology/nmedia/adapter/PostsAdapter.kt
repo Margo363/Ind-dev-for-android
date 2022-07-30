@@ -44,9 +44,9 @@ class PostViewHolder(
             author.text = post.author
             published.text = post.published
             content.text = post.content
+            avatar.loadCircleCrop("${BuildConfig.BASE_URL}/avatars/${post.authorAvatar}")
             like.isChecked = post.likedByMe
             like.text = "${post.likes}"
-            avatar.loadCircleCrop("${BuildConfig.BASE_URL}/avatars/${post.authorAvatar}")
 
             menu.setOnClickListener {
                 PopupMenu(it.context, it).apply {
@@ -61,7 +61,6 @@ class PostViewHolder(
                                 onInteractionListener.onEdit(post)
                                 true
                             }
-
                             else -> false
                         }
                     }
